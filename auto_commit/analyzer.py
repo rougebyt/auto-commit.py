@@ -7,29 +7,36 @@ CHANGE_PATTERNS = {
     "feat": [
         r"\b(add|new|implement|create|introduce|enable)\b",
         r"\bfeature\b",
-        r"\bui\b", r"\bcomponent\b", r"\bpage\b"
+        r"\bui\b",
+        r"\bcomponent\b",
+        r"\bpage\b",
     ],
     "fix": [
         r"\b(fix|bug|resolve|patch|correct|repair)\b",
-        r"\bcrash\b", r"\berror\b", r"\bfail\b"
+        r"\bcrash\b",
+        r"\berror\b",
+        r"\bfail\b",
     ],
     "docs": [
         r"\b(doc|readme|comment|update.*(doc|readme|example))\b",
-        r"\breadme\.md\b", r"\bcontributing\.md\b"
+        r"\breadme\.md\b",
+        r"\bcontributing\.md\b",
     ],
     "refactor": [
         r"\b(refactor|clean|optimize|restructure|improve|rename)\b",
-        r"\bperformance\b", r"\brewrite\b"
+        r"\bperformance\b",
+        r"\brewrite\b",
     ],
-    "test": [
-        r"\b(test|spec|mock|coverage|assert)\b",
-        r"\btest_.*\.py\b", r"tests?/"
-    ],
+    "test": [r"\b(test|spec|mock|coverage|assert)\b", r"\btest_.*\.py\b", r"tests?/"],
     "chore": [
         r"\b(chore|deps|config|build|ci|lint|format)\b",
-        r"\.toml$", r"\.yml$", r"\.yaml$", r"\.json$"
+        r"\.toml$",
+        r"\.yml$",
+        r"\.yaml$",
+        r"\.json$",
     ],
 }
+
 
 def classify_diff(diff_text: str, file_paths: List[str]) -> str:
     text = diff_text.lower()
@@ -47,6 +54,7 @@ def classify_diff(diff_text: str, file_paths: List[str]) -> str:
 
     return "chore"
 
+
 def generate_smart_message(repo: Repo) -> Dict[str, str]:
     diffs = []
     diff_samples = []
@@ -56,7 +64,7 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
         if path and path not in diffs:
             diffs.append(path)
         if item.diff:
-            diff_samples.append(item.diff.decode(errors='ignore'))
+            diff_samples.append(item.diff.decode(errors="ignore"))
 
     untracked = repo.untracked_files
     all_files = diffs + untracked
@@ -93,5 +101,5 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
         "type": commit_type,
         "scope": scope,
         "subject": subject,
-        "body": f"Files changed: {', '.join([f.split('/')[-1] for f in all_files[:5]])}{'...' if len(all_files) > 5 else ''}"
+        "body": f"Files changed: {', '.join([f.split('/')[-1] for f in all_files[:5]])}{'...' if len(all_files) > 5 else ''}",
     }
