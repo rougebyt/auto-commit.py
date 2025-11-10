@@ -40,18 +40,14 @@ CHANGE_PATTERNS = {
 
 def classify_diff(diff_text: str, file_paths: List[str]) -> str:
     text = diff_text.lower()
-    # Priority: file paths first (more accurate)
     for f in file_paths:
         f_lower = f.lower()
         for typ, patterns in CHANGE_PATTERNS.items():
             if any(re.search(p, f_lower) for p in patterns):
                 return typ
-
-    # Then diff content
     for typ, patterns in CHANGE_PATTERNS.items():
         if any(re.search(p, text) for p in patterns):
             return typ
-
     return "chore"
 
 
@@ -70,14 +66,16 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
     all_files = diffs + untracked
 
     if not all_files:
-        return {"type": "chore", "message": "No changes detected"}
+        return {
+            "type": "chore",
+            "scope": "general",
+            "subject": "No changes detected",
+            "body": "No files were modified or added.",
+        }
 
-    # Sample up to 500 chars of actual diff
     sample_diff = "\n".join(diff_samples)[:500]
-
     commit_type = classify_diff(sample_diff, all_files)
 
-    # Smart scope
     if len(all_files) == 1:
         scope = all_files[0].split("/")[-1].split(".")[0]
     elif any("tests/" in f for f in all_files):
@@ -87,7 +85,6 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
     else:
         scope = "general"
 
-    # Smart subject
     file_count = len(all_files)
     subject = f"Update {file_count} file{'s' if file_count != 1 else ''}"
     if commit_type == "feat":
@@ -97,9 +94,13 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
     elif commit_type == "refactor":
         subject = f"Refactor {scope} code"
 
+    file_list = ", ".join([f.split("/")[-1] for f in all_files[:5]])
+    if len(all_files) > 5:
+        file_list += "..."
+
     return {
         "type": commit_type,
         "scope": scope,
         "subject": subject,
-        "body": f"Files changed: {', '.join([f.split('/')[-1] for f in all_files[:5]])}{'...' if len(all_files) > 5 else ''}",
+        "body": f"Files changed: {file_list}",
     }
