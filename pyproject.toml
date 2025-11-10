@@ -1,0 +1,30 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "auto-commit"
+version = "0.1.0"
+description = "Smart git commit message generator using GitPython + Rich"
+authors = ["Moibon Dereje <moibonthebest@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/rougebyt/auto-commit.py"
+keywords = ["git", "automation", "cli", "ai-commit"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+GitPython = "^3.1.0"
+rich = "^13.0.0"
+click = "^8.1.0"
+
+[tool.poetry.scripts]
+auto-commit = "auto_commit.cli:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^24.0.0"
+ruff = "^0.6.0"
+
+[tool.poetry.scripts]
+auto-commit = "auto_commit.cli:main"
