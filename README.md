@@ -125,5 +125,4 @@ MIT © [Moibon Dereje](https://github.com/rougebyt)
 
 ⭐ **Star this repo** if it saves you time on commits!  
 📦 **Publish to PyPI** after testing: `poetry publish --build`
-```
 
