@@ -44,18 +44,25 @@ def main(dry_run: bool, amend: bool):
         console.print("[green]Dry run complete.[/green]")
         return
 
+
     if not click.confirm("Commit this message?", default=True):
         console.print("[yellow]Commit aborted.[/yellow]")
         return
 
     try:
+        # Stage everything (including untracked)
         repo.git.add(A=True)
-        commit_cmd = ["commit"]
+
+        # ----> NEW: proper GitPython commit <----
         if amend:
-            commit_cmd.append("--amend")
-        commit_cmd.extend(["-m", full_msg])
-        repo.git.execute(commit_cmd)
-        action = "amended" if amend else "committed"
+            # Amend the last commit (keeps the same author/date)
+            repo.index.commit(full_msg, head=True, amend=True)
+            action = "amended"
+        else:
+            repo.index.commit(full_msg)
+            action = "committed"
+        # -----------------------------------------
+
         console.print(f"[bold green]Successfully {action}![/bold green]")
     except Exception as e:
         console.print(f"[red]Commit failed: {e}[/red]")
