@@ -44,7 +44,6 @@ def main(dry_run: bool, amend: bool):
         console.print("[green]Dry run complete.[/green]")
         return
 
-
     if not click.confirm("Commit this message?", default=True):
         console.print("[yellow]Commit aborted.[/yellow]")
         return
