@@ -25,11 +25,11 @@ def main(dry_run: bool, amend: bool):
         console.print("[red]Bare repo detected![/red]")
         raise click.Abort()
 
-    if not repo.index.diff(None) and not repo.untracked_files:
+    message = generate_smart_message(repo)
+    if message["subject"] == "No changes detected":
         console.print("[yellow]No changes to commit.[/yellow]")
         return
 
-    message = generate_smart_message(repo)
     full_msg = f"{message['type']}({message['scope']}): {message['subject']}\n\n{message['body']}"
 
     console.print(

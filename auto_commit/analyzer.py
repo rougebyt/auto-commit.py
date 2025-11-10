@@ -1,6 +1,8 @@
 # auto_commit/analyzer.py
 import re
 from git import Repo
+from git.objects import Blob
+import os
 from typing import List, Dict
 
 CHANGE_PATTERNS = {
@@ -52,18 +54,54 @@ def classify_diff(diff_text: str, file_paths: List[str]) -> str:
 
 
 def generate_smart_message(repo: Repo) -> Dict[str, str]:
-    diffs = []
+    diffs = set()
     diff_samples = []
 
+    # Unstaged changes
     for item in repo.index.diff(None):
         path = item.a_path or item.b_path
-        if path and path not in diffs:
-            diffs.append(path)
+        if path:
+            diffs.add(path)
         if item.diff:
             diff_samples.append(item.diff.decode(errors="ignore"))
 
+    # Staged changes
+    staged_samples = []
+    if repo.head.is_valid():
+        for item in repo.index.diff("HEAD"):
+            path = item.a_path or item.b_path
+            if path:
+                diffs.add(path)
+            if item.diff:
+                staged_samples.append(item.diff.decode(errors="ignore"))
+    else:
+        # Initial commit: get staged files from index
+        staged_paths = set(path for (path, stage) in repo.index.entries if stage == 0)
+        for path in staged_paths:
+            diffs.add(path)
+            try:
+                entry = repo.index.entries[(path, 0)]
+                binsha = entry.binsha
+                blob = Blob(repo, binsha)
+                content = blob.data_stream.read().decode(errors="ignore")
+                staged_samples.append(content)
+            except:
+                pass
+
+    # Untracked files
     untracked = repo.untracked_files
-    all_files = diffs + untracked
+    untracked_samples = []
+    for u in untracked:
+        diffs.add(u)
+        full_path = os.path.join(repo.working_tree_dir, u)
+        try:
+            with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            untracked_samples.append(content)
+        except:
+            pass
+
+    all_files = sorted(list(diffs))
 
     if not all_files:
         return {
@@ -73,7 +111,7 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
             "body": "No files were modified or added.",
         }
 
-    sample_diff = "\n".join(diff_samples)[:500]
+    sample_diff = "\n".join(diff_samples + staged_samples + untracked_samples)[:500]
     commit_type = classify_diff(sample_diff, all_files)
 
     if len(all_files) == 1:
