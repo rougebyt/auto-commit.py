@@ -85,7 +85,7 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
                 blob = Blob(repo, binsha)
                 content = blob.data_stream.read().decode(errors="ignore")
                 staged_samples.append(content)
-            except:
+            except Exception:
                 pass
 
     # Untracked files
@@ -98,7 +98,7 @@ def generate_smart_message(repo: Repo) -> Dict[str, str]:
             with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
             untracked_samples.append(content)
-        except:
+        except Exception:
             pass
 
     all_files = sorted(list(diffs))
