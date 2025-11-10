@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.panel import Panel
 from git import Repo, InvalidGitRepositoryError
 from .analyzer import generate_smart_message
-from . import __version__
+from ._version import __version__   # ← Import from _version.py
 
 console = Console()
 
